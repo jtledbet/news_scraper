@@ -1,8 +1,7 @@
-body {
-    background-color: currentColor;
-}
-
 #main-nav, footer {
+    /* text-shadow: 1px 1px 0 1px #7A7A7A; */
+    letter-spacing: .1em;
+    text-shadow: 0 -1px 0 #fff, 0 1px 0 #2e2e2e, 0 1px 0 #2c2c2c, 0 1px 0 #2a2a2a, 0 1px 0 #282828, 0 1px 0 #262626, 0 1px 0 #242424, 0 2px 0 #222, 0 3px 0 #202020, 0 4px 0 #1e1e1e, 0 5px 0 #1c1c1c, 0 5px 0 #1a1a1a, 0 5px 0 #181818, 0 5px 0 #161616, 0 5px 0 #141414, 0 5px 0 #121212, 0 5px 5px rgba(0, 0, 0, 0.9);
     background: #0F2027;
     /* fallback for old browsers */
     background: -webkit-linear-gradient(to right, #2C5364, #203A43, #0F2027);
@@ -14,16 +13,44 @@ body {
 body {
     background: #0F2027;
     /* fallback for old browsers */
-    background: -webkit-linear-gradient(to bottom, #2C5364, #203A43, #0F2027);
+    background: -webkit-linear-gradient(to left, #2C5364, #203A43, #0F2027);
     /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to bottom, #2C5364, #203A43, #0F2027);
+    background: linear-gradient(to left, #2C5364, #203A43, #0F2027);
     /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
 
-btn {
+.jumbotron {
     background-color: #0F2027;
+    color: white;
+    text-shadow: 2px 2px 2px black;
+}
+
+.caption h1 {
+    /* background-color: #2C5364;  
+    color: #FFFFFF;
+    text-shadow: 1px 1px 1px 1px #0F2027;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); */
+    color: white;
+    background-color: #0F2027;
+    letter-spacing: .1em;
+  text-shadow: 0 -1px 0 #fff, 0 1px 0 #2e2e2e, 0 2px 0 #2c2c2c, 0 3px 0 #2a2a2a, 0 4px 0 #282828, 0 5px 0 #262626, 0 6px 0 #242424, 0 7px 0 #222, 0 8px 0 #202020, 0 9px 0 #1e1e1e, 0 10px 0 #1c1c1c, 0 11px 0 #1a1a1a, 0 12px 0 #181818, 0 13px 0 #161616, 0 14px 0 #141414, 0 15px 0 #121212, 0 22px 30px rgba(0, 0, 0, 0.9);
+}
+
+.btn {
+    /* background-color: #0F2027; */
+    background: #0F2027;
+    /* fallback for old browsers */
+    background: -webkit-linear-gradient(to top, #2C5364, #203A43, #0F2027);
+    /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to top, #2C5364, #203A43, #0F2027);
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+
+.btn:hover {
+    color: red;
 }
 
 footer {
     border-top: 2px black;
+    text-align: right;
 }
