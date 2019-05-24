@@ -36,16 +36,14 @@ app.use(express.static("public"));
 // By default mongoose uses callbacks for async queries, we're setting it to use promises (.then syntax) instead
 // Connect to the Mongo DB
 mongoose.Promise = Promise;
-mongoose.connect("mongodb://localhost/news_scraper", {
-  useMongoClient: true,
-  // useNewUrlParser: true
-});
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news_scraper";
+mongoose.connect(MONGODB_URI);
+
 
 // Routes
 app.get("/", function (req, res) {
   res.render("index");
 });
-
 
 // Scrape data from one site and place it into the mongodb db
 app.get("/scrape", function (req, res) {
@@ -84,7 +82,7 @@ app.get("/scrape", function (req, res) {
   console.log("scraped /r/javascript! \ncheck the db...");
 });
 
-// Scrape data from one site and place it into the mongodb db
+// Scrape data from a different site and place it into the mongodb db
 app.get("/scrape/:sub", function (req, res) {
   var sub = req.params.sub;
   // Make a request for the variable subreddit
