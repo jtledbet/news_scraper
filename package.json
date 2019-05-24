@@ -1,26 +1,22 @@
 {
-  "name": "news_scraper",
+  "name": "mongoose_skeleton",
   "version": "1.0.0",
-  "description": "Scrapes news! We hope...",
-  "main": "index.js",
+  "description": "",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "watch": "nodemon server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jtledbet/news_scraper.git"
-  },
-  "author": "Jon Ledbetter",
-  "license": "GPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/jtledbet/news_scraper/issues"
-  },
-  "homepage": "https://github.com/jtledbet/news_scraper#readme",
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
-    "cheerio": "^1.0.0-rc.3",
-    "express": "^4.17.0",
+    "axios": "^0.16.2",
+    "body-parser": "^1.18.2",
+    "cheerio": "^1.0.0-rc.2",
+    "express": "^4.16.1",
     "express-handlebars": "^3.1.0",
-    "mongoose": "^5.5.10"
+    "mongoose": "^4.12.0",
+    "morgan": "^1.9.0"
   }
 }
