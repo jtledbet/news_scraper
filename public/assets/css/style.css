@@ -19,6 +19,11 @@ body {
     /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
 
+#icon {
+    width: 45px;
+    margin-right: 10px;
+}
+
 .jumbotron {
     background-color: #0F2027;
     color: white;
