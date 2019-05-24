@@ -49,35 +49,8 @@ app.get("/", function (req, res) {
 app.get("/scrape", function (req, res) {
   // Make a request for the 'javascript' subreddit
   var scrapeURL = "https://old.reddit.com/r/javascript";
-  axios.get(scrapeURL).then(function (response) {
 
-    // Load the html body from request into cheerio
-    var $ = cheerio.load(response.data);
-
-    // Get each element with a "title" class
-    $(".title").each(function (i, element) {
-      // Save an empty result object
-      var result = {};
-      // Get text for title and link:
-
-      var title = $(element).children("a").text();
-      var link = $(element).children("a").attr("href");
-
-      result.title = title;
-      result.link = link;
-
-      // Create a new Article using the `result` object built from scraping
-      db.Article.create(result)
-        .then(function (dbArticle) {
-          // View the added result in the console
-          console.log(dbArticle);
-        })
-        .catch(function (err) {
-          // If an error occurred, log it
-          console.log(err);
-        });
-    });
-  });
+  goScrape(scrapeURL);
 
   console.log("scraped /r/javascript! \ncheck the db...");
 });
@@ -89,36 +62,7 @@ app.get("/scrape/:sub", function (req, res) {
   if (!sub) sub = "javascript"
   var scrapeURL = "https://old.reddit.com/r/" + sub;
   
-  axios.get(scrapeURL).then(function (response) {
-
-    // Load the html body from request into cheerio
-    var $ = cheerio.load(response.data);
-
-    // Get each element with a "title" class
-    $(".title").each(function (i, element) {
-      // Save an empty result object
-      var result = {};
-
-      // Get text for title and link:
-      var title = $(element).children("a").text();
-      var link = $(element).children("a").attr("href");
-
-      result.title = title;
-      result.link = link;
-
-      // Create a new Article using the `result` object built from scraping
-      db.Article.create(result)
-        .then(function (dbArticle) {
-          // View the added result in the console
-          console.log(dbArticle);
-        })
-        .catch(function (err) {
-          // If an error occurred, log it
-          console.log(err);
-          bootbox.alert("Error! \n" + err);
-        });
-    });
-  });
+  goScrape(scrapeURL);
 
   console.log("scraped " + sub + "! " + "check the db...");
 });
@@ -181,3 +125,37 @@ app.listen(PORT, function () {
 });
 
 // module.exports = goScrape;
+
+function goScrape(scrapeURL) {
+  axios.get(scrapeURL).then(function (response) {
+
+    // Load the html body from request into cheerio
+    var $ = cheerio.load(response.data);
+
+    // Get each element with a "title" class
+    $(".title").each(function (i, element) {
+      // Save an empty result object
+      var result = {};
+      // Get text for title and link:
+
+      var title = $(element).children("a").text();
+      var link = $(element).children("a").attr("href");
+      var summary = $(element).children("p").text();
+
+      result.title = title;
+      result.link = link;
+      result.summary = summary;
+      
+      // Create a new Article using the `result` object built from scraping
+      db.Article.create(result)
+        .then(function (dbArticle) {
+          // View the added result in the console
+          console.log(dbArticle);
+        })
+        .catch(function (err) {
+          // If an error occurred, log it
+          console.log(err);
+        });
+    });
+  });
+}

@@ -40,6 +40,7 @@ body {
     color: white;
     font-size: 16px;
     font-weight: bold;
+    text-shadow: 1px 1px 1px black;
 }
 
 .articlelink {
@@ -54,6 +55,7 @@ body {
     padding-left: 2em;
     font-size: 14px;
     font-weight: normal;
+    text-shadow: 1px 1px 1px black;
 }
 
 .btn, #savenote {

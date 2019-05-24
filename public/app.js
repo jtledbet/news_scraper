@@ -2,12 +2,50 @@
 // Grab the articles as a json
 $.getJSON("/articles", function (data) {
   // For each article:
-  for (var i = 0; i < data.length; i++) {
+  // for (var i = 0; i < data.length; i++) {
+  for (var i = data.length - 1; i > 0; i--) {
     var linkify = ("<a class='articlelink' href=" + data[i].link + ">" + data[i].link + "</a>");
+    // console.log("index:", i, "linkify:", linkify);
+    console.log(data[i].summary);
     $("#articles").append("<p class='articleitem' data-id='" + data[i]._id + "'>" + data[i].title + "<br><span id='thelink'>" + linkify + "</span></p>");
   }
 });
 
+// When you click the Scrape button
+$(document).on("click", "#scrape-btn", function () {
+  $.ajax({
+    method: "GET",
+    url: "/scrape",
+  }).done(function (data) {
+    console.log(data);
+    res.render("index");
+    window.location = "/articles";
+    document.location.reload();
+  });
+});
+
+// When you click the Clear button
+$(document).on("click", "#clear-btn", function () {
+  $("#articles").empty();
+});
+
+// When you click the Different Sub button
+$(document).on("click", "#switch-btn", function () {
+
+  bootbox.prompt("Enter a subreddit to scrape:", function (result) {
+    console.log("new sub:", result);
+
+    $.ajax({
+      method: "GET",
+      url: "/scrape/" + result
+    }).done(function (data) {
+      console.log(data);
+      res.render("index");
+      window.location = "/"
+      document.location.reload();
+    });
+  });
+});
 
 // Whenever someone clicks a p tag
 $(document).on("click", "p", function () {
@@ -71,37 +109,4 @@ $(document).on("click", "#savenote", function () {
   // Also, remove the values entered in the input and textarea for note entry
   $("#titleinput").val("");
   $("#bodyinput").val("");
-});
-
-// When you click the Diffferent Sub button
-$(document).on("click", "#scrape-btn", function () {
-  $.ajax({
-    method: "GET",
-    url: "/scrape",
-  }).done(function (data) {
-    console.log(data);
-    window.location = "/";
-    document.location.reload();
-  })
-});
-
-// When you click the Clear button
-$(document).on("click", "#clear-btn", function () {
-  $("#articles").empty();
-});
-
-// When you click the Different Sub button
-$(document).on("click", "#switch-btn", function () {
-
-  bootbox.prompt("Enter a subreddit to scrape:", function (result) {
-    console.log("new sub:", result);
-
-    $.ajax({
-      method: "GET",
-      url: "/scrape/" + result
-    }).done(function (data) {
-      console.log(data)
-      window.location = "/"
-    });
-  });
 });
