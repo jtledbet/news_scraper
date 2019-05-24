@@ -34,8 +34,8 @@ app.use(bodyParser.json());
 app.use(express.static("public"));
 
 // By default mongoose uses callbacks for async queries, we're setting it to use promises (.then syntax) instead
-// Connect to the Mongo DB
 mongoose.Promise = Promise;
+// Connect to the Mongo DB (heroku-compatible)
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news_scraper";
 mongoose.connect(MONGODB_URI);
 
@@ -48,7 +48,7 @@ app.get("/", function (req, res) {
 // Scrape data from one site and place it into the mongodb db
 app.get("/scrape", function (req, res) {
   // Make a request for the 'javascript' subreddit
-  var scrapeURL = "https://old.reddit.com/r/javascript";
+  var scrapeURL = "https://old.reddit.com/r/natureisfuckinglit";
 
   goScrape(scrapeURL);
 
@@ -140,11 +140,11 @@ function goScrape(scrapeURL) {
 
       var title = $(element).children("a").text();
       var link = $(element).children("a").attr("href");
-      var summary = $(element).children("p").text();
+      // var summary = $(element).children("p").text();
 
       result.title = title;
       result.link = link;
-      result.summary = summary;
+      // result.summary = summary;
       
       // Create a new Article using the `result` object built from scraping
       db.Article.create(result)

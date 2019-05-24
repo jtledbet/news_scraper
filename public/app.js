@@ -4,9 +4,7 @@ $.getJSON("/articles", function (data) {
   // For each article:
   // for (var i = 0; i < data.length; i++) {
   for (var i = data.length - 1; i > 0; i--) {
-    var linkify = ("<a class='articlelink' href=" + data[i].link + ">" + data[i].link + "</a>");
-    // console.log("index:", i, "linkify:", linkify);
-    console.log(data[i].summary);
+    var linkify = ("<a class='articlelink' href='" + data[i].link + "'>" + data[i].link + "</a>");
     $("#articles").append("<p class='articleitem' data-id='" + data[i]._id + "'>" + data[i].title + "<br><span id='thelink'>" + linkify + "</span></p>");
   }
 });
@@ -18,9 +16,9 @@ $(document).on("click", "#scrape-btn", function () {
     url: "/scrape",
   }).done(function (data) {
     console.log(data);
-    res.render("index");
-    window.location = "/articles";
-    document.location.reload();
+    // res.render("/articles");
+    // window.location = "/articles";
+    // document.location.reload();
   });
 });
 
