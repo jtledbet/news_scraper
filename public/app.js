@@ -33,15 +33,17 @@ $(document).on("click", "#switch-btn", function () {
   bootbox.prompt("Enter a subreddit to scrape:", function (result) {
     console.log("new sub:", result);
 
-    $.ajax({
-      method: "GET",
-      url: "/scrape/" + result
-    }).done(function (data) {
-      console.log(data);
-      res.render("index");
-      window.location = "/"
-      document.location.reload();
-    });
+    if (result) {
+      $.ajax({
+        method: "GET",
+        url: "/scrape/" + result
+      }).done(function (data) {
+        console.log(data);
+        res.render("index");
+        window.location = "/"
+        document.location.reload();
+      });
+    }
   });
 });
 
