@@ -22,6 +22,18 @@ $(document).on("click", "#scrape-btn", function () {
   });
 });
 
+$(document).on("click", "#scrape-btn", function () {
+  $.ajax({
+    method: "GET",
+    url: "/scrape",
+  }).done(function (data) {
+    console.log(data);
+    // res.render("/articles");
+    // window.location = "/articles";
+    // document.location.reload();
+  });
+});
+
 // When you click the Clear button
 $(document).on("click", "#clear-btn", function () {
   $("#articles").empty();

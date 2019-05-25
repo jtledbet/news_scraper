@@ -118,6 +118,10 @@ app.post("/articles/:id", function (req, res) {
     });
 });
 
+// Universal mismatch redirect
+app.all('*', function(req, res) {
+  res.redirect("/");
+});
 
 // Start the server
 app.listen(PORT, function () {
