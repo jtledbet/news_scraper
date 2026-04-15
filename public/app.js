@@ -1,4 +1,5 @@
 var showFavoritesOnly = false;
+var activeCategory    = "all";
 var PRESET_CATEGORIES = ["top", "new", "best", "ask", "show"];
 var LS_KEY = "hn_custom_categories";
 
@@ -62,8 +63,16 @@ function addCategoryButton(cat) {
 }
 
 function initCategories() {
-  var all = PRESET_CATEGORIES.concat(getCustomCategories());
-  all.forEach(addCategoryButton);
+  // ALL tab first
+  var allBtn = $("<button>")
+    .addClass("btn cat-btn active")
+    .text("All")
+    .attr("title", "Show all fetched stories")
+    .attr("data-category", "all");
+  $("#category-buttons").append(allBtn);
+
+  var feeds = PRESET_CATEGORIES.concat(getCustomCategories());
+  feeds.forEach(addCategoryButton);
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────
@@ -97,11 +106,18 @@ $(document).on("click", "#favorites-btn", function () {
   loadArticles();
 });
 
-// Category button click
+// Category button click — clears search, loads feed articles
 $(document).on("click", ".cat-btn", function () {
   var cat = $(this).data("category");
+  activeCategory = cat;
   $(".cat-btn").removeClass("active");
   $(this).addClass("active");
+  clearSearch();
+
+  if (cat === "all") {
+    loadArticles();
+    return;
+  }
 
   $.ajax({ method: "GET", url: "/scrape/" + cat })
     .done(function () {
@@ -111,6 +127,45 @@ $(document).on("click", ".cat-btn", function () {
       var msg = (xhr.responseJSON && xhr.responseJSON.error) || "Could not reach the database.";
       bootbox.alert("<strong>Database unavailable</strong><br>" + msg);
     });
+});
+
+// Search
+function clearSearch() {
+  $("#search-input").val("");
+  $("#search-label").empty();
+}
+
+function runSearch() {
+  var query = $("#search-input").val().trim();
+  if (!query) return;
+
+  $.ajax({ method: "GET", url: "/search", data: { query: query, type: activeCategory } })
+    .done(function (results) {
+      $("#articles").empty();
+      $("#search-label").html(
+        "Search results for <strong>\"" + query + "\"</strong>" +
+        (activeCategory !== "all" ? " in <strong>" + activeCategory + "</strong>" : "") +
+        " <a id='clear-search' href='#' title='Return to feed view'>✕ clear</a>"
+      );
+      if (!results.length) {
+        $("#articles").append("<p style='color:#aaa'>No results found.</p>");
+        return;
+      }
+      results.forEach(renderArticle);
+    })
+    .fail(function () {
+      bootbox.alert("Search failed. Try again.");
+    });
+}
+
+$(document).on("click", "#search-submit", runSearch);
+$(document).on("keypress", "#search-input", function (e) {
+  if (e.which === 13) runSearch();
+});
+$(document).on("click", "#clear-search", function (e) {
+  e.preventDefault();
+  clearSearch();
+  loadArticles();
 });
 
 // Add custom category

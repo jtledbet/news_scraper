@@ -81,6 +81,49 @@ app.get("/scrape/:type", function (req, res) {
 });
 
 
+// Search HN via Algolia — results are not saved to DB
+var ALGOLIA_TAG_MAP = {
+  all:  "story",
+  top:  "front_page",
+  new:  "story",
+  best: "story",
+  ask:  "ask_hn",
+  show: "show_hn"
+};
+
+app.get("/search", function (req, res) {
+  var query = (req.query.query || "").trim();
+  var type  = req.query.type || "all";
+  if (!query) return res.status(400).json({ error: "No search query provided." });
+
+  var tag      = ALGOLIA_TAG_MAP[type] || "story";
+  var endpoint = type === "new"
+    ? "https://hn.algolia.com/api/v1/search_by_date"
+    : "https://hn.algolia.com/api/v1/search";
+
+  axios.get(endpoint, {
+    params: { query: query, tags: tag, hitsPerPage: 30 }
+  })
+  .then(function (response) {
+    var results = response.data.hits
+      .filter(function (h) { return h.url && h.title; })
+      .map(function (h) {
+        return {
+          _id:   h.objectID,
+          title: h.title,
+          link:  h.url,
+          score: h.points,
+          by:    h.author
+        };
+      });
+    res.json(results);
+  })
+  .catch(function (err) {
+    console.error("Algolia search error:", err.message);
+    res.status(500).json({ error: "Search failed." });
+  });
+});
+
 // Route for toggling an Article's favorited status
 app.put("/articles/:id/favorite", function (req, res) {
   db.Article.findOne({ _id: req.params.id })
