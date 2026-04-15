@@ -216,7 +216,6 @@ $(document).on("click", "#savenote", function () {
     }
   }).then(function () {
     $("#notes").empty();
-    $("#notes").append("<p id='notes-hint'>← Click an article to add a note</p>");
   });
 
   $("#titleinput").val("");

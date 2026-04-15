@@ -230,7 +230,10 @@ footer {
 /* ── Notes hint ── */
 #notes-hint {
     color: #666;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: normal;
     text-shadow: none;
+    text-align: right;
+    margin-bottom: 6px;
+    width: 100%;
 }
