@@ -158,31 +158,6 @@ footer {
     text-shadow: 0 0 6px cornflowerblue;
 }
 
-#category-input-group {
-    display: inline-flex;
-    gap: 6px;
-    width: 220px;
-    margin-bottom: 10px;
-}
-
-#category-input {
-    display: inline-block;
-    width: auto;
-    flex: 1;
-    height: 28px;
-    font-size: 13px;
-    margin-bottom: 0;
-    padding: 3px 6px;
-}
-
-#category-submit {
-    height: 28px;
-    width: 28px;
-    padding: 0;
-    font-size: 18px;
-    line-height: 1;
-    flex-shrink: 0;
-}
 
 /* ── Search ── */
 #search-group {

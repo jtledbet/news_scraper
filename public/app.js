@@ -1,7 +1,9 @@
 var showFavoritesOnly = false;
 var activeCategory    = "all";
 var PRESET_CATEGORIES = ["top", "new", "best", "ask", "show"];
-var LS_KEY = "hn_custom_categories";
+
+// Clear any leftover custom tabs from localStorage
+localStorage.removeItem("hn_custom_categories");
 
 // ─── Articles ────────────────────────────────────────────────────────────────
 
@@ -40,10 +42,6 @@ function renderArticle(article) {
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 
-function getCustomCategories() {
-  return JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-}
-
 function addCategoryButton(cat) {
   var label = cat.charAt(0).toUpperCase() + cat.slice(1);
   var desc   = {
@@ -63,7 +61,6 @@ function addCategoryButton(cat) {
 }
 
 function initCategories() {
-  // ALL tab first
   var allBtn = $("<button>")
     .addClass("btn cat-btn active")
     .text("All")
@@ -71,8 +68,7 @@ function initCategories() {
     .attr("data-category", "all");
   $("#category-buttons").append(allBtn);
 
-  var feeds = PRESET_CATEGORIES.concat(getCustomCategories());
-  feeds.forEach(addCategoryButton);
+  PRESET_CATEGORIES.forEach(addCategoryButton);
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────
@@ -168,23 +164,7 @@ $(document).on("click", "#clear-search", function (e) {
   loadArticles();
 });
 
-// Add custom category
-$(document).on("click", "#category-submit", function () {
-  var val = $("#category-input").val().trim().toLowerCase();
-  if (!val) return;
 
-  var custom = getCustomCategories();
-  if (!PRESET_CATEGORIES.includes(val) && !custom.includes(val)) {
-    custom.push(val);
-    localStorage.setItem(LS_KEY, JSON.stringify(custom));
-    addCategoryButton(val);
-  }
-  $("#category-input").val("");
-});
-
-$(document).on("keypress", "#category-input", function (e) {
-  if (e.which === 13) $("#category-submit").click();
-});
 
 // Star button — toggle favorite
 $(document).on("click", ".star-btn", function (e) {
