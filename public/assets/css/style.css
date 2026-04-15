@@ -227,13 +227,18 @@ footer {
     padding-left: 8px;
 }
 
-/* ── Notes hint ── */
-#notes-hint {
-    color: #666;
-    font-size: 13px;
-    font-weight: normal;
-    text-shadow: none;
-    text-align: right;
-    margin-bottom: 6px;
-    width: 100%;
+/* ── Selected article ── */
+.articleitem {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 4px 8px;
+    transition: box-shadow 0.15s;
+}
+
+.articleitem:hover {
+    box-shadow: 0 0 0 1px rgba(100, 149, 237, 0.3);
+}
+
+.selected-article {
+    box-shadow: 0 0 0 2px cornflowerblue, 0 4px 16px rgba(100, 149, 237, 0.35);
 }

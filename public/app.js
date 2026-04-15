@@ -185,6 +185,8 @@ $(document).on("click", ".star-btn", function (e) {
 
 // Article click — open notes panel
 $(document).on("click", "p.articleitem", function () {
+  $("p.articleitem").removeClass("selected-article");
+  $(this).addClass("selected-article");
   $("#notes").empty();
   var thisId = $(this).attr("data-id");
 
