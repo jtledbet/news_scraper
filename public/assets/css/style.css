@@ -83,24 +83,9 @@ body {
 }
 
 #articles {
-    display: inline-block;
-    overflow: auto;
-    width: 60%;
-    height: 700px;
-}
-
-#noteheader, #notetitle {
-    color: white;
-    margin-top: 0px;
-    margin-bottom: 20px;
-}
-
-#notes {
-    float: right;
-    width: 35%;
-    font-size: 22px;
-    color: white;
-    text-shadow: 1px 1px 3px black;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 textarea, input {
@@ -134,6 +119,41 @@ input:hover, textarea:hover{
 footer {
     border-top: 2px black;
     text-align: right;
+}
+
+/* ── Note modal ── */
+#note-modal .modal-content {
+    background: #203A43;
+    color: white;
+    border: 1px solid #2C5364;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+
+#note-modal .modal-header {
+    border-bottom: 1px solid #2C5364;
+}
+
+#note-modal .modal-footer {
+    border-top: 1px solid #2C5364;
+}
+
+#note-modal .modal-title {
+    color: white;
+    font-size: 15px;
+    font-weight: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90%;
+}
+
+#note-modal .close {
+    color: white;
+    opacity: 0.6;
+}
+
+#note-modal .close:hover {
+    opacity: 1;
 }
 
 /* ── Categories bar ── */

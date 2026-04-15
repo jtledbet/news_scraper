@@ -1,7 +1,5 @@
 <nav class="navbar navbar-inverse" id="main-nav">
   <div class="container-fluid">
-    <div class="navbar-header">
-    </div>
     <ul class="nav navbar-nav">
       <li><a class="btn" href="/" title="Reload articles already saved in your database">Refresh Results</a></li>
       <li><a class="btn" id="scrape-btn" title="Fetch the latest top stories from Hacker News and save them to your database"><img id="icon" src="../../assets/images/flame.png">Populate! <img id="icon" src="../../assets/images/flame.png"></a></li>
@@ -29,7 +27,26 @@
 
 <div class="container-fluid wrapper">
   <div id="articles"></div>
-  <div id="notes"></div>
+</div>
+
+<!-- Note modal -->
+<div class="modal fade" id="note-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="modal-article-title"></h4>
+      </div>
+      <div class="modal-body">
+        <input id="titleinput" name="title" placeholder="Note title...">
+        <textarea id="bodyinput" name="body" placeholder="Note body..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+        <button class="btn" id="savenote" title="Save this note to the database">Save Note</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <footer class="footer">
