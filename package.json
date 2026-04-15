@@ -1,7 +1,7 @@
 {
   "name": "news_scraper",
   "version": "1.0.0",
-  "description": "A web scraper that pulls Reddit posts into MongoDB and lets you attach personal notes to each article.",
+  "description": "A Hacker News reader that stores articles in MongoDB and lets you search, favorite, and annotate stories.",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,7 +12,6 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^1.15.0",
-    "body-parser": "^1.18.2",
     "dotenv": "^16.6.1",
     "express": "^4.16.1",
     "express-handlebars": "^8.0.1",

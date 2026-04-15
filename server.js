@@ -1,6 +1,5 @@
 require("dotenv").config();
 var express = require("express");
-var bodyParser = require("body-parser");
 var logger = require("morgan");
 var mongoose = require("mongoose");
 
@@ -21,14 +20,21 @@ var exphbs = require("express-handlebars");
 app.engine("handlebars", exphbs.engine({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
-// Use morgan logger for logging requests
+// Middleware
 app.use(logger("dev"));
-// Use body-parser for handling form submissions
-app.use(bodyParser.urlencoded({ extended: false }));
-
-app.use(bodyParser.json());
-// Use express.static to serve the public folder as a static directory
+app.use(express.urlencoded({ extended: false }));  // Express 4.16+ has body-parser built in
+app.use(express.json());
 app.use(express.static("public"));
+
+// Helpers
+function validObjectId(id) {
+  return mongoose.Types.ObjectId.isValid(id);
+}
+
+function serverError(res, context, err) {
+  console.error(context + ":", err && err.message ? err.message : err);
+  res.status(500).json({ error: "Server error. Try again." });
+}
 
 // By default mongoose uses callbacks for async queries, we're setting it to use promises (.then syntax) instead
 mongoose.Promise = Promise;
@@ -163,77 +169,71 @@ app.get("/search", function (req, res) {
   });
 });
 
-// Route for toggling an Article's favorited status
+// Toggle an Article's favorited status
 app.put("/articles/:id/favorite", function (req, res) {
+  if (!validObjectId(req.params.id)) return res.status(400).json({ error: "Invalid article ID." });
+
   db.Article.findOne({ _id: req.params.id })
     .then(function (article) {
+      if (!article) return res.status(404).json({ error: "Article not found." });
       return db.Article.findOneAndUpdate(
         { _id: req.params.id },
         { favorited: !article.favorited },
         { new: true }
-      );
+      ).then(function (dbArticle) { res.json(dbArticle); });
     })
-    .then(function (dbArticle) {
-      res.json(dbArticle);
-    })
-    .catch(function (err) {
-      res.json(err);
-    });
+    .catch(function (err) { serverError(res, "favorite toggle", err); });
 });
 
-// Route for getting all Articles from the db (pass ?favorites=true to filter)
+// Get all Articles (pass ?favorites=true to filter)
 app.get("/articles", function (req, res) {
   var query = req.query.favorites === "true" ? { favorited: true } : {};
   db.Article.find(query)
-    .then(function (dbArticle) {
-      // If we were able to successfully find Articles, send them back to the client
-      res.json(dbArticle);
-    })
-    .catch(function (err) {
-      // If an error occurred, send it to the client
-      res.json(err);
-    });
+    .then(function (dbArticle) { res.json(dbArticle); })
+    .catch(function (err) { serverError(res, "articles list", err); });
 });
 
-// Route for grabbing a specific Article by id, populate it with it's note
+// Get one Article populated with its Note
 app.get("/articles/:id", function (req, res) {
-  // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
+  if (!validObjectId(req.params.id)) return res.status(400).json({ error: "Invalid article ID." });
+
   db.Article.findOne({ _id: req.params.id })
-    // ..and populate all of the notes associated with it
     .populate("note")
     .then(function (dbArticle) {
-      // If we were able to successfully find an Article with the given id, send it back to the client
+      if (!dbArticle) return res.status(404).json({ error: "Article not found." });
       res.json(dbArticle);
     })
-    .catch(function (err) {
-      // If an error occurred, send it to the client
-      res.json(err);
-    });
+    .catch(function (err) { serverError(res, "article fetch", err); });
 });
 
-// Route for saving/updating an Article's associated Note
+// Save or update an Article's associated Note
 app.post("/articles/:id", function (req, res) {
-  // Create a new note and pass the req.body to the entry
-  db.Note.create(req.body)
+  if (!validObjectId(req.params.id)) return res.status(400).json({ error: "Invalid article ID." });
+
+  var noteBody = {
+    title: (req.body.title || "").toString().slice(0, 500),
+    body:  (req.body.body  || "").toString().slice(0, 10000)
+  };
+
+  db.Note.create(noteBody)
     .then(function (dbNote) {
-      // If a Note was created successfully, find one Article with an `_id` equal to `req.params.id`. Update the Article to be associated with the new Note
-      // { new: true } tells the query that we want it to return the updated User -- it returns the original by default
-      // Since our mongoose query returns a promise, we can chain another `.then` which receives the result of the query
-      return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: dbNote._id }, { new: true });
+      return db.Article.findOneAndUpdate(
+        { _id: req.params.id },
+        { note: dbNote._id },
+        { new: true }
+      );
     })
     .then(function (dbArticle) {
-      // If we were able to successfully update an Article, send it back to the client
+      if (!dbArticle) return res.status(404).json({ error: "Article not found." });
       res.json(dbArticle);
     })
-    .catch(function (err) {
-      // If an error occurred, send it to the client
-      res.json(err);
-    });
+    .catch(function (err) { serverError(res, "note save", err); });
 });
 
-// Universal mismatch redirect
-app.all('*', function(req, res) {
-  res.redirect("/");
+// 404 for unmatched routes (swallow silently on the client, redirect to home)
+app.use(function (req, res) {
+  if (req.accepts("html")) return res.redirect("/");
+  res.status(404).json({ error: "Not found." });
 });
 
 // Start the server

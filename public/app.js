@@ -1,8 +1,10 @@
 var showFavoritesOnly  = false;
+var hideReadArticles   = false;
 var activeCategory     = "all";
 var currentSearchQuery = null;
 var PRESET_CATEGORIES  = ["top", "new", "best", "ask", "show"];
 var SAVED_TABS_KEY     = "hn_saved_searches";
+var READ_KEY           = "hn_read_articles";
 
 // Clear legacy custom tab key if present
 localStorage.removeItem("hn_custom_categories");
@@ -30,6 +32,51 @@ function saveTabs(tabs) {
   localStorage.setItem(SAVED_TABS_KEY, JSON.stringify(tabs));
 }
 
+function getReadSet() {
+  return new Set(JSON.parse(localStorage.getItem(READ_KEY) || "[]"));
+}
+
+// Cap the read set so localStorage doesn't bloat forever. Sets preserve
+// insertion order, so slice(-MAX) drops the oldest IDs first.
+var READ_MAX = 2000;
+function persistReadSet(set) {
+  var arr = Array.from(set);
+  if (arr.length > READ_MAX) arr = arr.slice(-READ_MAX);
+  localStorage.setItem(READ_KEY, JSON.stringify(arr));
+}
+
+function markRead(id) {
+  var set = getReadSet();
+  set.add(String(id));
+  persistReadSet(set);
+}
+
+function unmarkRead(id) {
+  var set = getReadSet();
+  set.delete(String(id));
+  persistReadSet(set);
+}
+
+function showLoading(msg) {
+  $("#loading-indicator").text(msg || "Loading...").fadeIn(120);
+}
+
+function hideLoading() {
+  $("#loading-indicator").fadeOut(120);
+}
+
+// Escape a string for safe insertion into HTML. Use when building
+// .html() strings that include user-controlled data (search queries, etc).
+function escapeForLabel(s) {
+  if (s == null) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // ─── Articles ────────────────────────────────────────────────────────────────
 
 function loadArticles() {
@@ -42,35 +89,79 @@ function loadArticles() {
   });
 }
 
+// Build article DOM with jQuery — attrs and text() auto-escape, so a title like
+// "<img src=x onerror=alert(1)>" stays as literal text instead of becoming HTML.
 function renderArticle(article) {
-  var meta = "";
-  if (article.score) meta += "<span class='meta'>▲ " + article.score + "</span> ";
-  if (article.by)    meta += "<span class='meta'>by " + article.by + "</span> ";
-  if (article.time)  meta += "<span class='meta'>" + timeAgo(article.time) + "</span>";
+  var isFav  = !!article.favorited;
+  var isRead = getReadSet().has(String(article._id));
 
-  var domain = article.link;
+  var $p = $("<p>")
+    .addClass("articleitem")
+    .toggleClass("favorited-article", isFav)
+    .toggleClass("read-article", isRead)
+    .attr("data-id", article._id)
+    .attr("data-link", article.link)
+    .attr("title", "Click to open article (right-click to toggle read)");
+
+  // Star button
+  var $star = $("<span>")
+    .addClass("star-btn")
+    .toggleClass("favorited", isFav)
+    .attr("data-id", article._id)
+    .attr("title", "Star this article")
+    .attr("role", "button")
+    .attr("tabindex", "0")
+    .text(isFav ? "★" : "☆");
+
+  // Title (safe: .text() escapes)
+  var $title = $("<span>").addClass("article-title").text(article.title);
+
+  // Meta
+  var $meta = $("<span>").addClass("meta-group");
+  if (article.score) $meta.append($("<span>").addClass("meta").text("▲ " + article.score));
+  if (article.by)    $meta.append($("<span>").addClass("meta").text("by " + article.by));
+  if (article.time)  $meta.append($("<span>").addClass("meta").text(timeAgo(article.time)));
+
+  // Note button
+  var $noteBtn = $("<span>")
+    .addClass("note-btn")
+    .attr("data-id", article._id)
+    .attr("title", "Add or edit a note")
+    .attr("role", "button")
+    .attr("tabindex", "0")
+    .text("📝");
+
+  // Domain link (href is set via .attr() which escapes quotes/ampersands safely)
+  var domain = article.link || "";
   try { domain = new URL(article.link).hostname.replace(/^www\./, ""); } catch (e) {}
 
-  var linkify = "<a class='articlelink' href='" + article.link + "' target='_blank' title='" + article.link + "'>" + domain + "</a>";
+  var $linkify = $("<a>")
+    .addClass("articlelink")
+    .attr("href", article.link)
+    .attr("target", "_blank")
+    .attr("rel", "noopener noreferrer")
+    .attr("title", article.link)
+    .text(domain);
 
-  var comments = "";
+  var $thelink = $("<span>").addClass("thelink").append($linkify);
+
   if (article.hnId) {
     var count = article.commentCount != null ? article.commentCount : "?";
-    comments = " <a class='commentlink' href='https://news.ycombinator.com/item?id=" + article.hnId + "' target='_blank' title='Open discussion on Hacker News'>💬 " + count + "</a>";
+    var $comments = $("<a>")
+      .addClass("commentlink")
+      .attr("href", "https://news.ycombinator.com/item?id=" + encodeURIComponent(article.hnId))
+      .attr("target", "_blank")
+      .attr("rel", "noopener noreferrer")
+      .attr("title", "Open discussion on Hacker News")
+      .text("💬 " + count);
+    $thelink.append(" ", $comments);
   }
 
-  var isFav     = article.favorited;
-  var starClass = "star-btn" + (isFav ? " favorited" : "");
-  var starChar  = isFav ? "★" : "☆";
-  var pClass    = "articleitem" + (isFav ? " favorited-article" : "");
+  $p.append($star, " ", $title, " ", $meta, " ", $noteBtn, $("<br>"), $thelink);
 
-  $("#articles").append(
-    "<p class='" + pClass + "' data-id='" + article._id + "' title='Click to add or edit a note'>" +
-      "<span class='" + starClass + "' data-id='" + article._id + "' title='Star this article'>" + starChar + "</span>" +
-      article.title + " " + meta +
-      "<br><span class='thelink'>" + linkify + comments + "</span>" +
-    "</p>"
-  );
+  if (hideReadArticles && isRead) $p.hide();
+
+  $("#articles").append($p);
 }
 
 // ─── Categories ───────────────────────────────────────────────────────────────
@@ -86,24 +177,58 @@ function addCategoryButton(cat) {
   }[cat] || "Fetch '" + cat + "' stories from Hacker News";
 
   if (cat === "best") {
-    var group = $("<div>").addClass("btn-group best-dropdown");
+    var group = $("<span>").addClass("best-group");
     var mainBtn = $("<button>")
       .addClass("btn cat-btn")
       .text(label)
       .attr("title", desc)
       .attr("data-category", "best");
-    var caretBtn = $("<button>")
-      .addClass("btn cat-btn dropdown-toggle")
-      .attr("data-toggle", "dropdown")
-      .attr("title", "Filter best stories by time period")
-      .html("<span class='caret'></span>");
-    var menu = $("<ul>").addClass("dropdown-menu");
-    [["week", "Past Week"], ["month", "Past Month"], ["year", "Past Year"]].forEach(function (p) {
-      menu.append($("<li>").append(
-        $("<a>").attr("href", "#").attr("data-best-period", p[0]).text(p[1])
-      ));
-    });
-    group.append(mainBtn).append(caretBtn).append(menu);
+    group.append(mainBtn);
+
+    // TODO: Wk/Mo/Yr time-period buttons — click handlers never fire for
+    // reasons we couldn't isolate. Backend /best?period= works (verified via
+    // curl). Preserved here for future debugging; toggle the `false` to re-enable.
+    // See: git log for branch 'best-period-buttons' if it was pushed.
+    if (false) {
+      [["week", "Wk", "Past Week"], ["month", "Mo", "Past Month"], ["year", "Yr", "Past Year"]].forEach(function (p) {
+        var period    = p[0];
+        var shortText = p[1];
+        var fullLabel = p[2];
+
+        $("<button>")
+          .addClass("btn best-period-btn")
+          .text(shortText)
+          .attr("title", "Best of " + fullLabel)
+          .on("click", function () {
+            clearSearch();
+            $(".cat-btn, .saved-cat-btn, .best-period-btn").removeClass("active");
+            $(".cat-btn[data-category='best']").addClass("active");
+            $(this).addClass("active");
+
+            showLoading("Loading best stories (" + fullLabel + ")...");
+            $.ajax({ method: "GET", url: "/best", data: { period: period } })
+              .done(function (results) {
+                hideLoading();
+                $("#articles").empty();
+                $("#search-label").html(
+                  "Best stories: <strong>" + escapeForLabel(fullLabel) + "</strong>" +
+                  " <a id='clear-search' href='#' title='Return to feed view'>✕ clear</a>"
+                );
+                if (!results.length) {
+                  $("#articles").append("<p style='color:#aaa'>No results found.</p>");
+                  return;
+                }
+                results.forEach(renderArticle);
+              })
+              .fail(function () {
+                hideLoading();
+                bootbox.alert("Could not fetch best stories. Try again.");
+              });
+          })
+          .appendTo(group);
+      });
+    }
+
     $("#category-buttons").append(group);
     return;
   }
@@ -154,11 +279,16 @@ initCategories();
 
 // Populate button
 $(document).on("click", "#scrape-btn", function () {
+  showLoading("Fetching top stories from Hacker News...");
   $.ajax({ method: "GET", url: "/scrape" })
     .done(function () {
-      setTimeout(loadArticles, 1500);
+      setTimeout(function () {
+        loadArticles();
+        hideLoading();
+      }, 1500);
     })
     .fail(function (xhr) {
+      hideLoading();
       var msg = (xhr.responseJSON && xhr.responseJSON.error) || "Could not reach the database.";
       bootbox.alert("<strong>Database unavailable</strong><br>" + msg);
     });
@@ -176,9 +306,21 @@ $(document).on("click", "#favorites-btn", function () {
   loadArticles();
 });
 
+// Hide read toggle
+$(document).on("click", "#hide-read-btn", function () {
+  hideReadArticles = !hideReadArticles;
+  $(this).toggleClass("active-nav", hideReadArticles);
+  if (hideReadArticles) {
+    $("p.articleitem.read-article").fadeOut(200);
+  } else {
+    $("p.articleitem.read-article").fadeIn(200);
+  }
+});
+
 // Category button click — clears search, loads feed articles
 $(document).on("click", ".cat-btn", function () {
   var cat = $(this).data("category");
+  if (!cat) return;
   activeCategory = cat;
   $(".cat-btn").removeClass("active");
   $(this).addClass("active");
@@ -189,42 +331,29 @@ $(document).on("click", ".cat-btn", function () {
     return;
   }
 
+  if (cat === "best") {
+    $("#search-label").html(
+      "Best: <strong>HN&rsquo;s current top list</strong>" +
+      " &nbsp;<span style='color:#666;font-size:12px'>(use Wk / Mo / Yr for time-filtered)</span>" +
+      " <a id='clear-search' href='#' title='Return to feed view'>✕ clear</a>"
+    );
+  }
+
+  showLoading("Fetching " + cat + " stories...");
   $.ajax({ method: "GET", url: "/scrape/" + cat })
     .done(function () {
-      setTimeout(loadArticles, 1500);
+      setTimeout(function () {
+        loadArticles();
+        hideLoading();
+      }, 1500);
     })
     .fail(function (xhr) {
+      hideLoading();
       var msg = (xhr.responseJSON && xhr.responseJSON.error) || "Could not reach the database.";
       bootbox.alert("<strong>Database unavailable</strong><br>" + msg);
     });
 });
 
-// Best stories — time-filtered dropdown
-$(document).on("click", "[data-best-period]", function (e) {
-  e.preventDefault();
-  var period = $(this).data("best-period");
-  var label  = $(this).text();
-  $(".cat-btn, .saved-cat-btn").removeClass("active");
-  $(".cat-btn[data-category='best']").addClass("active");
-  clearSearch();
-
-  $.ajax({ method: "GET", url: "/best", data: { period: period } })
-    .done(function (results) {
-      $("#articles").empty();
-      $("#search-label").html(
-        "Best stories: <strong>" + label + "</strong>" +
-        " <a id='clear-search' href='#' title='Return to feed view'>✕ clear</a>"
-      );
-      if (!results.length) {
-        $("#articles").append("<p style='color:#aaa'>No results found.</p>");
-        return;
-      }
-      results.forEach(renderArticle);
-    })
-    .fail(function () {
-      bootbox.alert("Could not fetch best stories. Try again.");
-    });
-});
 
 // Search
 function clearSearch() {
@@ -241,13 +370,15 @@ function runSearch(query) {
   if (!query) return;
   currentSearchQuery = query;
 
+  showLoading("Searching HN for \"" + query + "\"...");
   $.ajax({ method: "GET", url: "/search", data: { query: query, type: activeCategory } })
     .done(function (results) {
+      hideLoading();
       $("#articles").empty();
       var alreadySaved = getSavedTabs().includes(query);
       $("#search-label").html(
-        "Search results for <strong>\"" + query + "\"</strong>" +
-        (activeCategory !== "all" ? " in <strong>" + activeCategory + "</strong>" : "") +
+        "Search results for <strong>\"" + escapeForLabel(query) + "\"</strong>" +
+        (activeCategory !== "all" ? " in <strong>" + escapeForLabel(activeCategory) + "</strong>" : "") +
         " <a id='clear-search' href='#' title='Return to feed view'>✕ clear</a>"
       );
       $("#save-tab-btn").toggle(!alreadySaved);
@@ -258,6 +389,7 @@ function runSearch(query) {
       results.forEach(renderArticle);
     })
     .fail(function () {
+      hideLoading();
       bootbox.alert("Search failed. Try again.");
     });
 }
@@ -325,12 +457,52 @@ $(document).on("click", ".star-btn", function (e) {
     });
 });
 
-// Article click — open note modal
+// Article click — open article in new tab + mark as read
 $(document).on("click", "p.articleitem", function () {
-  $("p.articleitem").removeClass("selected-article");
-  $(this).addClass("selected-article");
+  var link = $(this).data("link");
+  var id   = $(this).data("id");
+  if (!link) return;
+  markRead(id);
+  $(this).addClass("read-article");
+  if (hideReadArticles) $(this).fadeOut(200);
+  // window.open's 2nd arg is target (e.g. _blank), 3rd is features.
+  var newWin = window.open(link, "_blank", "noopener,noreferrer");
+  if (newWin) newWin.opener = null;
+});
 
-  var thisId = $(this).attr("data-id");
+// Right-click on an article — toggle read state (lets you UN-mark-as-read)
+// Skip when right-clicking a link, so the browser's native "open in new tab" menu still works.
+$(document).on("contextmenu", "p.articleitem", function (e) {
+  if ($(e.target).closest("a").length) return;
+  e.preventDefault();
+  var id = $(this).data("id");
+  if ($(this).hasClass("read-article")) {
+    unmarkRead(id);
+    $(this).removeClass("read-article");
+  } else {
+    markRead(id);
+    $(this).addClass("read-article");
+    if (hideReadArticles) $(this).fadeOut(200);
+  }
+});
+
+// Stop link clicks from bubbling to the article (would otherwise mark-read + open article again)
+$(document).on("click", ".articlelink, .commentlink", function (e) {
+  e.stopPropagation();
+});
+
+// Keyboard activation for span-based buttons (spans with role="button" tabindex="0")
+$(document).on("keydown", ".star-btn, .note-btn", function (e) {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    $(this).trigger("click");
+  }
+});
+
+// Note button click — open note modal (does not open the article)
+$(document).on("click", ".note-btn", function (e) {
+  e.stopPropagation();
+  var thisId = $(this).data("id");
 
   $.ajax({ method: "GET", url: "/articles/" + thisId })
     .then(function (data) {

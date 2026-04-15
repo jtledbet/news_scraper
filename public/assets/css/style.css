@@ -179,25 +179,29 @@ footer {
 }
 
 
-/* ── Best dropdown ── */
-.best-dropdown {
+/* ── Best group (main btn + Wk/Mo/Yr sub-buttons) ── */
+.best-group {
+    display: inline-flex;
+    align-items: center;
     margin: 3px;
 }
 
-.best-dropdown .dropdown-menu {
-    background: #203A43;
-    border: 1px solid #2C5364;
-    min-width: 130px;
-}
-
-.best-dropdown .dropdown-menu li a {
+.best-period-btn {
     color: #a8a8a8;
-    padding: 6px 14px;
+    background: #0F2027;
+    background: linear-gradient(to top, #2C5364, #203A43, #0F2027);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    padding: 3px 7px;
+    margin-left: 2px;
+    opacity: 0.7;
 }
 
-.best-dropdown .dropdown-menu li a:hover {
-    background: #2C5364;
+.best-period-btn:hover,
+.best-period-btn.active {
     color: white;
+    opacity: 1;
+    text-shadow: 0 0 6px cornflowerblue;
 }
 
 /* ── Saved tabs ── */
@@ -312,18 +316,81 @@ footer {
     padding-left: 8px;
 }
 
-/* ── Selected article ── */
+/* ── Article interaction ── */
 .articleitem {
     cursor: pointer;
     border-radius: 4px;
     padding: 4px 8px;
-    transition: box-shadow 0.15s;
+    transition: box-shadow 0.15s, opacity 0.2s;
 }
 
 .articleitem:hover {
     box-shadow: 0 0 0 1px rgba(100, 149, 237, 0.3);
 }
 
-.selected-article {
-    box-shadow: 0 0 0 2px cornflowerblue, 0 4px 16px rgba(100, 149, 237, 0.35);
+/* ── Loading indicator ── */
+#loading-indicator {
+    text-align: center;
+    color: cornflowerblue;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    padding: 18px 0;
+    text-shadow: 0 0 8px rgba(100, 149, 237, 0.4);
+}
+
+/* ── Keyboard focus ── */
+.star-btn:focus,
+.note-btn:focus {
+    outline: 2px solid cornflowerblue;
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+    #wrapper {
+        width: 100%;
+        padding: 15px 10px;
+    }
+    #articles {
+        max-width: 100%;
+    }
+    #search-group {
+        width: 100%;
+        max-width: 340px;
+    }
+    #main-nav .navbar-nav > li {
+        float: none;
+        display: inline-block;
+    }
+    .caption h1 {
+        font-size: 28px;
+    }
+    /* Make note btn always visible on mobile — no hover state */
+    .note-btn {
+        opacity: 0.5 !important;
+    }
+}
+
+/* ── Read state ── */
+.read-article {
+    opacity: 0.38;
+}
+
+.read-article:hover {
+    opacity: 0.65;
+}
+
+/* ── Note button ── */
+.note-btn {
+    font-size: 13px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.articleitem:hover .note-btn {
+    opacity: 1;
 }
