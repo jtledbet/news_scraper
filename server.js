@@ -34,22 +34,43 @@ app.use(express.static("public"));
 mongoose.Promise = Promise;
 // Connect to the Mongo DB (heroku-compatible)
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news_scraper";
-mongoose.connect(MONGODB_URI);
+var dbConnected = false;
 
+mongoose.connect(MONGODB_URI)
+  .then(function () {
+    dbConnected = true;
+  })
+  .catch(function (err) {
+    console.error("MongoDB connection failed:", err.message);
+    console.error("Set MONGODB_URI in .env or start a local MongoDB instance on port 27017.");
+  });
+
+mongoose.connection.on("disconnected", function () {
+  dbConnected = false;
+  console.error("MongoDB disconnected. Check your MONGODB_URI or local MongoDB service.");
+});
+
+mongoose.connection.on("reconnected", function () {
+  dbConnected = true;
+});
 
 // Routes
 app.get("/", function (req, res) {
   res.render("index");
 });
 
+var DB_DOWN_MSG = "Database unavailable. Set MONGODB_URI in .env or start a local MongoDB instance.";
+
 // Fetch top HN stories (default)
 app.get("/scrape", function (req, res) {
+  if (!dbConnected) return res.status(503).json({ error: DB_DOWN_MSG });
   goFetch("top");
   res.json({ message: "Fetching top Hacker News stories — refresh in a moment." });
 });
 
 // Fetch a specific HN category: top, new, best, ask, show
 app.get("/scrape/:type", function (req, res) {
+  if (!dbConnected) return res.status(503).json({ error: DB_DOWN_MSG });
   var type = req.params.type;
   var valid = ["top", "new", "best", "ask", "show"];
   if (!valid.includes(type)) {

@@ -24,6 +24,9 @@ $(document).on("click", "#scrape-btn", function () {
     url: "/scrape",
   }).done(function () {
     window.location.reload();
+  }).fail(function (xhr) {
+    var msg = (xhr.responseJSON && xhr.responseJSON.error) || "Could not reach the database.";
+    bootbox.alert("<strong>Database unavailable</strong><br>" + msg);
   });
 });
 
