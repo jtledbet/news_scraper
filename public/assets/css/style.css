@@ -48,11 +48,7 @@ body {
     text-shadow: 1px 1px 1px black;
 }
 
-#wat {
-    font-size: 1px;
-}
-
-#thelink {
+.thelink {
     padding-left: 2em;
     font-size: 14px;
     font-weight: normal;
@@ -75,7 +71,7 @@ body {
     text-shadow: 0.5px 0.5px 3px cornflowerblue;
 }
 
-#wrapper {
+.wrapper {
     width: 960px;
     margin-left: auto;
     margin-right: auto;
@@ -348,7 +344,7 @@ footer {
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
-    #wrapper {
+    .wrapper {
         width: 100%;
         padding: 15px 10px;
     }

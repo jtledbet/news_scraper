@@ -178,57 +178,23 @@ function addCategoryButton(cat) {
 
   if (cat === "best") {
     var group = $("<span>").addClass("best-group");
-    var mainBtn = $("<button>")
-      .addClass("btn cat-btn")
-      .text(label)
-      .attr("title", desc)
-      .attr("data-category", "best");
-    group.append(mainBtn);
-
-    // TODO: Wk/Mo/Yr time-period buttons — click handlers never fire for
-    // reasons we couldn't isolate. Backend /best?period= works (verified via
-    // curl). Preserved here for future debugging; toggle the `false` to re-enable.
-    // See: git log for branch 'best-period-buttons' if it was pushed.
-    if (false) {
-      [["week", "Wk", "Past Week"], ["month", "Mo", "Past Month"], ["year", "Yr", "Past Year"]].forEach(function (p) {
-        var period    = p[0];
-        var shortText = p[1];
-        var fullLabel = p[2];
-
+    group.append(
+      $("<button>")
+        .addClass("btn cat-btn")
+        .text(label)
+        .attr("title", desc)
+        .attr("data-category", "best")
+    );
+    [["week", "Wk", "Past Week"], ["month", "Mo", "Past Month"], ["year", "Yr", "Past Year"]].forEach(function (p) {
+      group.append(
         $("<button>")
           .addClass("btn best-period-btn")
-          .text(shortText)
-          .attr("title", "Best of " + fullLabel)
-          .on("click", function () {
-            clearSearch();
-            $(".cat-btn, .saved-cat-btn, .best-period-btn").removeClass("active");
-            $(".cat-btn[data-category='best']").addClass("active");
-            $(this).addClass("active");
-
-            showLoading("Loading best stories (" + fullLabel + ")...");
-            $.ajax({ method: "GET", url: "/best", data: { period: period } })
-              .done(function (results) {
-                hideLoading();
-                $("#articles").empty();
-                $("#search-label").html(
-                  "Best stories: <strong>" + escapeForLabel(fullLabel) + "</strong>" +
-                  " <a id='clear-search' href='#' title='Return to feed view'>✕ clear</a>"
-                );
-                if (!results.length) {
-                  $("#articles").append("<p style='color:#aaa'>No results found.</p>");
-                  return;
-                }
-                results.forEach(renderArticle);
-              })
-              .fail(function () {
-                hideLoading();
-                bootbox.alert("Could not fetch best stories. Try again.");
-              });
-          })
-          .appendTo(group);
-      });
-    }
-
+          .text(p[1])
+          .attr("title", "Best of " + p[2])
+          .attr("data-best-period", p[0])
+          .attr("data-best-label", p[2])
+      );
+    });
     $("#category-buttons").append(group);
     return;
   }
@@ -351,6 +317,40 @@ $(document).on("click", ".cat-btn", function () {
       hideLoading();
       var msg = (xhr.responseJSON && xhr.responseJSON.error) || "Could not reach the database.";
       bootbox.alert("<strong>Database unavailable</strong><br>" + msg);
+    });
+});
+
+// Best time-period buttons (Wk / Mo / Yr) — hits Algolia, results not saved to DB
+$(document).on("click", ".best-period-btn", function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+  var $btn      = $(this);
+  var period    = $btn.data("best-period");
+  var fullLabel = $btn.data("best-label") || period;
+
+  clearSearch();
+  $(".cat-btn, .saved-cat-btn, .best-period-btn").removeClass("active");
+  $(".cat-btn[data-category='best']").addClass("active");
+  $btn.addClass("active");
+
+  showLoading("Loading best stories (" + fullLabel + ")...");
+  $.ajax({ method: "GET", url: "/best", data: { period: period } })
+    .done(function (results) {
+      hideLoading();
+      $("#articles").empty();
+      $("#search-label").html(
+        "Best stories: <strong>" + escapeForLabel(fullLabel) + "</strong>" +
+        " <a id='clear-search' href='#' title='Return to feed view'>✕ clear</a>"
+      );
+      if (!results.length) {
+        $("#articles").append("<p style='color:#aaa'>No results found.</p>");
+        return;
+      }
+      results.forEach(renderArticle);
+    })
+    .fail(function () {
+      hideLoading();
+      bootbox.alert("Could not fetch best stories. Try again.");
     });
 });
 
