@@ -1,13 +1,11 @@
+require("dotenv").config();
 var express = require("express");
 var bodyParser = require("body-parser");
 var logger = require("morgan");
 var mongoose = require("mongoose");
 
-// Our scraping tools
-// Axios is a promised-based http library, similar to jQuery's Ajax method
-// It works on the client and on the server
+// Axios for HTTP requests
 var axios = require("axios");
-var cheerio = require("cheerio");
 
 // Require all models
 var db = require("./models");
@@ -20,14 +18,13 @@ var app = express();
 // Set Handlebars.
 var exphbs = require("express-handlebars");
 // Configure handlebars
-app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.engine("handlebars", exphbs.engine({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
 // Use morgan logger for logging requests
 app.use(logger("dev"));
 // Use body-parser for handling form submissions
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.urlencoded());
 
 app.use(bodyParser.json());
 // Use express.static to serve the public folder as a static directory
@@ -45,26 +42,21 @@ app.get("/", function (req, res) {
   res.render("index");
 });
 
-// Scrape data from one site and place it into the mongodb db
+// Fetch top HN stories (default)
 app.get("/scrape", function (req, res) {
-  // Make a request for the 'javascript' subreddit
-  var scrapeURL = "https://old.reddit.com/r/natureisfuckinglit";
-
-  goScrape(scrapeURL);
-
-  console.log("scraped /r/javascript! \ncheck the db...");
+  goFetch("top");
+  res.json({ message: "Fetching top Hacker News stories — refresh in a moment." });
 });
 
-// Scrape data from a different site and place it into the mongodb db
-app.get("/scrape/:sub", function (req, res) {
-  var sub = req.params.sub;
-  // Make a request for the variable subreddit
-  if (!sub) sub = "javascript"
-  var scrapeURL = "https://old.reddit.com/r/" + sub;
-  
-  goScrape(scrapeURL);
-
-  console.log("scraped " + sub + "! " + "check the db...");
+// Fetch a specific HN category: top, new, best, ask, show
+app.get("/scrape/:type", function (req, res) {
+  var type = req.params.type;
+  var valid = ["top", "new", "best", "ask", "show"];
+  if (!valid.includes(type)) {
+    return res.status(400).json({ error: "Invalid type. Use: top, new, best, ask, show" });
+  }
+  goFetch(type);
+  res.json({ message: "Fetching " + type + " Hacker News stories — refresh in a moment." });
 });
 
 
@@ -128,38 +120,34 @@ app.listen(PORT, function () {
   console.log("App running on port " + PORT + "!");
 });
 
-// module.exports = goScrape;
+var HN_BASE = "https://hacker-news.firebaseio.com/v0";
 
-function goScrape(scrapeURL) {
-  axios.get(scrapeURL).then(function (response) {
+function goFetch(type) {
+  axios.get(HN_BASE + "/" + type + "stories.json")
+    .then(function (response) {
+      // Grab the top 30 story IDs
+      var ids = response.data.slice(0, 30);
+      return Promise.all(ids.map(function (id) {
+        return axios.get(HN_BASE + "/item/" + id + ".json");
+      }));
+    })
+    .then(function (responses) {
+      responses.forEach(function (response) {
+        var story = response.data;
+        // Skip stories without a URL (Ask HN, polls, etc.)
+        if (!story || !story.title || !story.url) return;
 
-    // Load the html body from request into cheerio
-    var $ = cheerio.load(response.data);
-
-    // Get each element with a "title" class
-    $(".title").each(function (i, element) {
-      // Save an empty result object
-      var result = {};
-      // Get text for title and link:
-
-      var title = $(element).children("a").text();
-      var link = $(element).children("a").attr("href");
-      // var summary = $(element).children("p").text();
-
-      result.title = title;
-      result.link = link;
-      // result.summary = summary;
-      
-      // Create a new Article using the `result` object built from scraping
-      db.Article.create(result)
-        .then(function (dbArticle) {
-          // View the added result in the console
-          console.log(dbArticle);
-        })
-        .catch(function (err) {
-          // If an error occurred, log it
-          console.log(err);
+        db.Article.create({
+          title: story.title,
+          link: story.url,
+          score: story.score,
+          by: story.by
+        }).catch(function (err) {
+          if (err.code !== 11000) console.error("DB error:", err.message);
         });
+      });
+    })
+    .catch(function (err) {
+      console.error("HN API error:", err.message);
     });
-  });
 }

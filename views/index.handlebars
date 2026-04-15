@@ -4,16 +4,16 @@
     </div>
     <ul class="nav navbar-nav">
      <li> <a class="btn" href="/">Refresh Results</a></li>
-      <li><a class="btn" id="scrape-btn" onclick="window.location.href='/'"><img id="icon" src="../../assets/images/flame.png">Scrape!             <img id="icon" src="../../assets/images/flame.png"></a></li>
+      <li><a class="btn" id="scrape-btn"><img id="icon" src="../../assets/images/flame.png">Populate! <img id="icon" src="../../assets/images/flame.png"></a></li>
       <li><a class="btn" id="clear-btn">Clear Results!</a></li>
-      <li><a class="btn" id="switch-btn">Scrape a Different Sub</a></li>
+      <li><a class="btn" id="switch-btn">Fetch a Category</a></li>
     </ul>
   </div>
 </nav>
 <div class="jumbotron text-center">
   <div class="caption">
-    <h1>Scrape-a-Sub™</h1>
-    <h5>(Reddit Scraper for Subreddit "Nature is Lit")<span id='wat'>wat</span></h5>
+    <h1>HN Reader</h1>
+    <h5>Hacker News stories, saved to your own database with personal notes.</h5>
   </div>
 </div>
 <div class="container-fluid wrapper">
@@ -21,13 +21,7 @@
 
       </div>
       <div id="notes">
-        {{!-- <div class="card" style="width: 18rem;">
-          <div class="card-body">note body
-            <h5 class="card-title" id="notetitle">note title</h5>
-            <p class="card-text" id="notebody">note text</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-          </div>
-        </div> --}}
+        <p id="notes-hint">← Click an article to add a note</p>
       </div>
 </div>
 

@@ -8,12 +8,15 @@ var ArticleSchema = new Schema({
   },
   link: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
-  // summary: {
-  //   type: String,
-  //   required: false
-  // },
+  score: {
+    type: Number
+  },
+  by: {
+    type: String
+  },
   note: {
     type: Schema.Types.ObjectId,
     ref: "Note"

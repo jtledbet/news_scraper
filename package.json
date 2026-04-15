@@ -1,22 +1,22 @@
 {
-  "name": "mongoose_skeleton",
+  "name": "news_scraper",
   "version": "1.0.0",
-  "description": "",
+  "description": "A web scraper that pulls Reddit posts into MongoDB and lets you attach personal notes to each article.",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "watch": "nodemon server.js"
   },
-  "author": "",
+  "author": "Jon Ledbetter",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.16.2",
+    "axios": "^1.15.0",
     "body-parser": "^1.18.2",
-    "cheerio": "^1.0.0-rc.2",
+    "dotenv": "^16.6.1",
     "express": "^4.16.1",
-    "express-handlebars": "^3.1.0",
-    "mongoose": "^4.12.0",
+    "express-handlebars": "^8.0.1",
+    "mongoose": "^9.4.1",
     "morgan": "^1.9.0"
   }
 }

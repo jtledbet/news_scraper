@@ -1,11 +1,19 @@
 
-// Grab the articles as a json
+// Grab the articles as a json and render them on the page
 $.getJSON("/articles", function (data) {
-  // For each article:
-  // for (var i = 0; i < data.length; i++) {
   for (var i = data.length - 1; i > 0; i--) {
-    var linkify = ("<a class='articlelink' href='" + data[i].link + "'>" + data[i].link + "</a>");
-    $("#articles").append("<p class='articleitem' data-id='" + data[i]._id + "'>" + data[i].title + "<br><span id='thelink'>" + linkify + "</span></p>");
+    var article = data[i];
+    var meta = "";
+    if (article.score) meta += "<span class='meta'>▲ " + article.score + "</span> ";
+    if (article.by)    meta += "<span class='meta'>by " + article.by + "</span>";
+    var domain = new URL(article.link).hostname.replace(/^www\./, "");
+    var linkify = "<a class='articlelink' href='" + article.link + "' target='_blank' title='" + article.link + "'>" + domain + "</a>";
+    $("#articles").append(
+      "<p class='articleitem' data-id='" + article._id + "'>" +
+        article.title + " " + meta +
+        "<br><span class='thelink'>" + linkify + "</span>" +
+      "</p>"
+    );
   }
 });
 
@@ -14,23 +22,8 @@ $(document).on("click", "#scrape-btn", function () {
   $.ajax({
     method: "GET",
     url: "/scrape",
-  }).done(function (data) {
-    console.log(data);
-    // res.render("/articles");
-    // window.location = "/articles";
-    // document.location.reload();
-  });
-});
-
-$(document).on("click", "#scrape-btn", function () {
-  $.ajax({
-    method: "GET",
-    url: "/scrape",
-  }).done(function (data) {
-    console.log(data);
-    // res.render("/articles");
-    // window.location = "/articles";
-    // document.location.reload();
+  }).done(function () {
+    window.location.reload();
   });
 });
 
@@ -41,19 +34,13 @@ $(document).on("click", "#clear-btn", function () {
 
 // When you click the Different Sub button
 $(document).on("click", "#switch-btn", function () {
-
-  bootbox.prompt("Enter a subreddit to scrape:", function (result) {
-    console.log("new sub:", result);
-
+  bootbox.prompt("Enter a category (top, new, best, ask, show):", function (result) {
     if (result) {
       $.ajax({
         method: "GET",
         url: "/scrape/" + result
-      }).done(function (data) {
-        console.log(data);
-        res.render("index");
-        window.location = "/"
-        document.location.reload();
+      }).done(function () {
+        window.location = "/";
       });
     }
   });
@@ -61,8 +48,9 @@ $(document).on("click", "#switch-btn", function () {
 
 // Whenever someone clicks a p tag
 $(document).on("click", "p", function () {
-  // Empty the notes from the note section
+  // Clear the note section
   $("#notes").empty();
+  $("#notes-hint").remove();
   // Save the id from the p tag
   var thisId = $(this).attr("data-id");
 
@@ -73,8 +61,7 @@ $(document).on("click", "p", function () {
   })
     // With that done, add the note information to the page
     .then(function (data) {
-      console.log(data);
-      $("#notes").append("<h2 id='noteheader'> Leave a note! </h3><hr>");
+      $("#notes").append("<h2 id='noteheader'> Leave a note! </h2><hr>");
       // The title of the article
       $("#notes").append("<h3 id='notetitle'>" + data.title + "</h3><hr>");
       // An input to enter a new title
@@ -84,11 +71,9 @@ $(document).on("click", "p", function () {
       // A button to submit a new note, with the id of the article saved to it
       $("#notes").append("<button class='btn' data-id='" + data._id + "' id='savenote'>Save Note</button>");
 
-      // If there's a note in the article
+      // If there's a note in the article, pre-populate the inputs
       if (data.note) {
-        // Place the title of the note in the title input
         $("#titleinput").val(data.note.title);
-        // Place the body of the note in the body textarea
         $("#bodyinput").val(data.note.body);
       }
     });
@@ -104,21 +89,16 @@ $(document).on("click", "#savenote", function () {
     method: "POST",
     url: "/articles/" + thisId,
     data: {
-      // Value taken from title input
       title: $("#titleinput").val(),
-      // Value taken from note textarea
       body: $("#bodyinput").val()
     }
   })
-    // With that done
-    .then(function (data) {
-      // Log the response
-      console.log(data);
-      // Empty the notes section
+    .then(function () {
       $("#notes").empty();
+      $("#notes").append("<p id='notes-hint'>← Click an article to add a note</p>");
     });
 
-  // Also, remove the values entered in the input and textarea for note entry
+  // Also clear the inputs
   $("#titleinput").val("");
   $("#bodyinput").val("");
 });
