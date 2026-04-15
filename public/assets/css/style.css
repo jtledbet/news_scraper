@@ -135,3 +135,86 @@ footer {
     border-top: 2px black;
     text-align: right;
 }
+
+/* ── Categories bar ── */
+#categories-bar {
+    padding: 12px 0 8px;
+    background: rgba(15, 32, 39, 0.6);
+}
+
+#category-buttons {
+    margin-bottom: 8px;
+}
+
+.cat-btn {
+    margin: 3px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.cat-btn.active {
+    color: cornflowerblue;
+    text-shadow: 0 0 6px cornflowerblue;
+}
+
+#category-input-group {
+    display: inline-flex;
+    gap: 6px;
+    width: 220px;
+}
+
+#category-input {
+    display: inline-block;
+    width: auto;
+    flex: 1;
+    height: 28px;
+    font-size: 13px;
+    margin-bottom: 0;
+    padding: 3px 6px;
+}
+
+#category-submit {
+    height: 28px;
+    width: 28px;
+    padding: 0;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* ── Favorites ── */
+#favorites-btn.active-nav {
+    color: gold;
+    text-shadow: 0 0 6px gold;
+}
+
+.star-btn {
+    cursor: pointer;
+    margin-right: 6px;
+    font-size: 16px;
+    color: #666;
+    transition: color 0.15s;
+}
+
+.star-btn:hover {
+    color: gold;
+}
+
+.star-btn.favorited {
+    color: gold;
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.6);
+}
+
+.favorited-article {
+    border-left: 2px solid gold;
+    padding-left: 8px;
+}
+
+/* ── Notes hint ── */
+#notes-hint {
+    color: #666;
+    font-size: 15px;
+    font-weight: normal;
+    text-shadow: none;
+}

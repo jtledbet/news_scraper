@@ -17,6 +17,10 @@ var ArticleSchema = new Schema({
   by: {
     type: String
   },
+  favorited: {
+    type: Boolean,
+    default: false
+  },
   note: {
     type: Schema.Types.ObjectId,
     ref: "Note"

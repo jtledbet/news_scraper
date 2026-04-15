@@ -3,26 +3,34 @@
     <div class="navbar-header">
     </div>
     <ul class="nav navbar-nav">
-     <li> <a class="btn" href="/">Refresh Results</a></li>
-      <li><a class="btn" id="scrape-btn"><img id="icon" src="../../assets/images/flame.png">Populate! <img id="icon" src="../../assets/images/flame.png"></a></li>
-      <li><a class="btn" id="clear-btn">Clear Results!</a></li>
-      <li><a class="btn" id="switch-btn">Fetch a Category</a></li>
+      <li><a class="btn" href="/" title="Reload articles already saved in your database">Refresh Results</a></li>
+      <li><a class="btn" id="scrape-btn" title="Fetch the latest top stories from Hacker News and save them to your database"><img id="icon" src="../../assets/images/flame.png">Populate! <img id="icon" src="../../assets/images/flame.png"></a></li>
+      <li><a class="btn" id="clear-btn" title="Clear articles from view — does not delete them from the database">Clear Results!</a></li>
+      <li><a class="btn" id="favorites-btn" title="Show only articles you have starred">★ Favorites</a></li>
     </ul>
   </div>
 </nav>
+
 <div class="jumbotron text-center">
   <div class="caption">
     <h1>HN Reader</h1>
     <h5>Hacker News stories, saved to your own database with personal notes.</h5>
   </div>
 </div>
-<div class="container-fluid wrapper">
-      <div id="articles">
 
-      </div>
-      <div id="notes">
-        <p id="notes-hint">← Click an article to add a note</p>
-      </div>
+<div id="categories-bar" class="text-center">
+  <div id="category-buttons"></div>
+  <div id="category-input-group">
+    <input type="text" id="category-input" placeholder="Add a category...">
+    <button class="btn" id="category-submit" title="Add a custom Hacker News category to fetch">+</button>
+  </div>
+</div>
+
+<div class="container-fluid wrapper">
+  <div id="articles"></div>
+  <div id="notes">
+    <p id="notes-hint">← Click an article to add a note</p>
+  </div>
 </div>
 
 <footer class="footer">

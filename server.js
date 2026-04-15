@@ -81,10 +81,28 @@ app.get("/scrape/:type", function (req, res) {
 });
 
 
-// Route for getting all Articles from the db
+// Route for toggling an Article's favorited status
+app.put("/articles/:id/favorite", function (req, res) {
+  db.Article.findOne({ _id: req.params.id })
+    .then(function (article) {
+      return db.Article.findOneAndUpdate(
+        { _id: req.params.id },
+        { favorited: !article.favorited },
+        { new: true }
+      );
+    })
+    .then(function (dbArticle) {
+      res.json(dbArticle);
+    })
+    .catch(function (err) {
+      res.json(err);
+    });
+});
+
+// Route for getting all Articles from the db (pass ?favorites=true to filter)
 app.get("/articles", function (req, res) {
-  // Grab every document in the Articles collection
-  db.Article.find({})
+  var query = req.query.favorites === "true" ? { favorited: true } : {};
+  db.Article.find(query)
     .then(function (dbArticle) {
       // If we were able to successfully find Articles, send them back to the client
       res.json(dbArticle);
