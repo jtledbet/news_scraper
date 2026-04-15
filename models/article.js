@@ -17,6 +17,15 @@ var ArticleSchema = new Schema({
   by: {
     type: String
   },
+  time: {
+    type: Number
+  },
+  commentCount: {
+    type: Number
+  },
+  hnId: {
+    type: String
+  },
   favorited: {
     type: Boolean,
     default: false

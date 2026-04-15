@@ -109,11 +109,14 @@ app.get("/search", function (req, res) {
       .filter(function (h) { return h.url && h.title; })
       .map(function (h) {
         return {
-          _id:   h.objectID,
-          title: h.title,
-          link:  h.url,
-          score: h.points,
-          by:    h.author
+          _id:          h.objectID,
+          title:        h.title,
+          link:         h.url,
+          score:        h.points,
+          by:           h.author,
+          time:         h.created_at_i,
+          commentCount: h.num_comments,
+          hnId:         h.objectID
         };
       });
     res.json(results);
@@ -220,10 +223,13 @@ function goFetch(type) {
         if (!story || !story.title || !story.url) return;
 
         db.Article.create({
-          title: story.title,
-          link: story.url,
-          score: story.score,
-          by: story.by
+          title:        story.title,
+          link:         story.url,
+          score:        story.score,
+          by:           story.by,
+          time:         story.time,
+          commentCount: story.descendants,
+          hnId:         String(story.id)
         }).catch(function (err) {
           if (err.code !== 11000) console.error("DB error:", err.message);
         });

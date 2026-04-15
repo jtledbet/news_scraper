@@ -179,6 +179,50 @@ footer {
 }
 
 
+/* ── Saved tabs ── */
+.saved-tab {
+    display: inline-flex;
+    align-items: center;
+    margin: 3px;
+}
+
+.saved-cat-btn {
+    border-style: dashed !important;
+    font-style: italic;
+}
+
+.saved-tab-remove {
+    cursor: pointer;
+    color: #666;
+    font-size: 14px;
+    margin-left: 2px;
+    padding: 0 3px;
+    line-height: 1;
+}
+
+.saved-tab-remove:hover {
+    color: #aaa;
+}
+
+/* ── Article meta ── */
+.meta {
+    font-size: 12px;
+    font-weight: normal;
+    color: #888;
+}
+
+.commentlink {
+    font-size: 12px;
+    font-weight: normal;
+    margin-left: 8px;
+    color: #888;
+    text-decoration: none;
+}
+
+.commentlink:hover {
+    color: #aaa;
+}
+
 /* ── Search ── */
 #search-group {
     display: inline-flex;
