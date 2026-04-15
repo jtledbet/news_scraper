@@ -91,6 +91,42 @@ var ALGOLIA_TAG_MAP = {
   show: "show_hn"
 };
 
+// Best stories filtered by time period via Algolia
+app.get("/best", function (req, res) {
+  var period = req.query.period || "alltime";
+  var now    = Math.floor(Date.now() / 1000);
+  var since  = { week: now - 604800, month: now - 2592000, year: now - 31536000 }[period];
+
+  if (!since) return res.status(400).json({ error: "Invalid period. Use: week, month, year" });
+
+  axios.get("https://hn.algolia.com/api/v1/search", {
+    params: { tags: "front_page", numericFilters: "points>10,created_at_i>" + since, hitsPerPage: 50 }
+  })
+  .then(function (response) {
+    var results = response.data.hits
+      .filter(function (h) { return h.url && h.title; })
+      .sort(function (a, b) { return (b.points || 0) - (a.points || 0); })
+      .slice(0, 30)
+      .map(function (h) {
+        return {
+          _id:          h.objectID,
+          title:        h.title,
+          link:         h.url,
+          score:        h.points,
+          by:           h.author,
+          time:         h.created_at_i,
+          commentCount: h.num_comments,
+          hnId:         h.objectID
+        };
+      });
+    res.json(results);
+  })
+  .catch(function (err) {
+    console.error("Best/Algolia error:", err.message);
+    res.status(500).json({ error: "Failed to fetch best stories." });
+  });
+});
+
 app.get("/search", function (req, res) {
   var query = (req.query.query || "").trim();
   var type  = req.query.type || "all";

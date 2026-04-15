@@ -179,6 +179,27 @@ footer {
 }
 
 
+/* ── Best dropdown ── */
+.best-dropdown {
+    margin: 3px;
+}
+
+.best-dropdown .dropdown-menu {
+    background: #203A43;
+    border: 1px solid #2C5364;
+    min-width: 130px;
+}
+
+.best-dropdown .dropdown-menu li a {
+    color: #a8a8a8;
+    padding: 6px 14px;
+}
+
+.best-dropdown .dropdown-menu li a:hover {
+    background: #2C5364;
+    color: white;
+}
+
 /* ── Saved tabs ── */
 .saved-tab {
     display: inline-flex;

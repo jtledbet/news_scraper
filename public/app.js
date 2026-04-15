@@ -85,6 +85,29 @@ function addCategoryButton(cat) {
     show: "Show HN — projects people are sharing"
   }[cat] || "Fetch '" + cat + "' stories from Hacker News";
 
+  if (cat === "best") {
+    var group = $("<div>").addClass("btn-group best-dropdown");
+    var mainBtn = $("<button>")
+      .addClass("btn cat-btn")
+      .text(label)
+      .attr("title", desc)
+      .attr("data-category", "best");
+    var caretBtn = $("<button>")
+      .addClass("btn cat-btn dropdown-toggle")
+      .attr("data-toggle", "dropdown")
+      .attr("title", "Filter best stories by time period")
+      .html("<span class='caret'></span>");
+    var menu = $("<ul>").addClass("dropdown-menu");
+    [["week", "Past Week"], ["month", "Past Month"], ["year", "Past Year"]].forEach(function (p) {
+      menu.append($("<li>").append(
+        $("<a>").attr("href", "#").attr("data-best-period", p[0]).text(p[1])
+      ));
+    });
+    group.append(mainBtn).append(caretBtn).append(menu);
+    $("#category-buttons").append(group);
+    return;
+  }
+
   var btn = $("<button>")
     .addClass("btn cat-btn")
     .text(label)
@@ -173,6 +196,33 @@ $(document).on("click", ".cat-btn", function () {
     .fail(function (xhr) {
       var msg = (xhr.responseJSON && xhr.responseJSON.error) || "Could not reach the database.";
       bootbox.alert("<strong>Database unavailable</strong><br>" + msg);
+    });
+});
+
+// Best stories — time-filtered dropdown
+$(document).on("click", "[data-best-period]", function (e) {
+  e.preventDefault();
+  var period = $(this).data("best-period");
+  var label  = $(this).text();
+  $(".cat-btn, .saved-cat-btn").removeClass("active");
+  $(".cat-btn[data-category='best']").addClass("active");
+  clearSearch();
+
+  $.ajax({ method: "GET", url: "/best", data: { period: period } })
+    .done(function (results) {
+      $("#articles").empty();
+      $("#search-label").html(
+        "Best stories: <strong>" + label + "</strong>" +
+        " <a id='clear-search' href='#' title='Return to feed view'>✕ clear</a>"
+      );
+      if (!results.length) {
+        $("#articles").append("<p style='color:#aaa'>No results found.</p>");
+        return;
+      }
+      results.forEach(renderArticle);
+    })
+    .fail(function () {
+      bootbox.alert("Could not fetch best stories. Try again.");
     });
 });
 
