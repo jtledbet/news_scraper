@@ -1,5 +1,7 @@
 # HN Reader
 
+**Live:** https://newsscraper-production-7c8c.up.railway.app/
+
 A full-stack Node/Express app that pulls stories from [Hacker News](https://news.ycombinator.com), stores them in MongoDB, and lets you search, curate, and annotate articles.
 
 ---
