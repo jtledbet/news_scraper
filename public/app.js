@@ -122,15 +122,6 @@ function renderArticle(article) {
   if (article.by)    $meta.append($("<span>").addClass("meta").text("by " + article.by));
   if (article.time)  $meta.append($("<span>").addClass("meta").text(timeAgo(article.time)));
 
-  // Note button
-  var $noteBtn = $("<span>")
-    .addClass("note-btn")
-    .attr("data-id", article._id)
-    .attr("title", "Add or edit a note")
-    .attr("role", "button")
-    .attr("tabindex", "0")
-    .text("📝");
-
   // Domain link (href is set via .attr() which escapes quotes/ampersands safely)
   var domain = article.link || "";
   try { domain = new URL(article.link).hostname.replace(/^www\./, ""); } catch (e) {}
@@ -157,7 +148,19 @@ function renderArticle(article) {
     $thelink.append(" ", $comments);
   }
 
-  $p.append($star, " ", $title, " ", $meta, " ", $noteBtn, $("<br>"), $thelink);
+  // Note button — only for DB articles (not ephemeral Algolia results)
+  if (!article.ephemeral) {
+    var $noteBtn = $("<span>")
+      .addClass("note-btn")
+      .attr("data-id", article._id)
+      .attr("title", "Add or edit a note")
+      .attr("role", "button")
+      .attr("tabindex", "0")
+      .text("📝");
+    $p.append($star, " ", $title, " ", $meta, " ", $noteBtn, $("<br>"), $thelink);
+  } else {
+    $p.append($star, " ", $title, " ", $meta, $("<br>"), $thelink);
+  }
 
   if (hideReadArticles && isRead) $p.hide();
 

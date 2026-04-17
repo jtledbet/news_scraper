@@ -106,7 +106,7 @@ app.get("/best", function (req, res) {
   if (!since) return res.status(400).json({ error: "Invalid period. Use: week, month, year" });
 
   axios.get("https://hn.algolia.com/api/v1/search", {
-    params: { tags: "front_page", numericFilters: "points>10,created_at_i>" + since, hitsPerPage: 50 }
+    params: { tags: "story", numericFilters: "points>50,created_at_i>" + since, hitsPerPage: 50 }
   })
   .then(function (response) {
     var results = response.data.hits
@@ -122,7 +122,8 @@ app.get("/best", function (req, res) {
           by:           h.author,
           time:         h.created_at_i,
           commentCount: h.num_comments,
-          hnId:         h.objectID
+          hnId:         h.objectID,
+          ephemeral:    true
         };
       });
     res.json(results);
@@ -158,7 +159,8 @@ app.get("/search", function (req, res) {
           by:           h.author,
           time:         h.created_at_i,
           commentCount: h.num_comments,
-          hnId:         h.objectID
+          hnId:         h.objectID,
+          ephemeral:    true
         };
       });
     res.json(results);
