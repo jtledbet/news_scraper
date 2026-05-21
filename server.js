@@ -36,6 +36,42 @@ function serverError(res, context, err) {
   res.status(500).json({ error: "Server error. Try again." });
 }
 
+function mapAlgoliaHit(h) {
+  return {
+    _id:          h.objectID,
+    title:        h.title,
+    link:         h.url,
+    score:        h.points,
+    by:           h.author,
+    time:         h.created_at_i,
+    commentCount: h.num_comments,
+    hnId:         h.objectID,
+    ephemeral:    true
+  };
+}
+
+function persistAlgoliaResults(results) {
+  if (!dbConnected) return Promise.resolve(results);
+
+  return Promise.all(results.map(function (result) {
+    return db.Article.findOneAndUpdate(
+      { link: result.link },
+      {
+        $set: {
+          title:        result.title,
+          link:         result.link,
+          score:        result.score,
+          by:           result.by,
+          time:         result.time,
+          commentCount: result.commentCount,
+          hnId:         result.hnId
+        }
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+  }));
+}
+
 // By default mongoose uses callbacks for async queries, we're setting it to use promises (.then syntax) instead
 mongoose.Promise = Promise;
 // Connect to the Mongo DB (heroku-compatible)
@@ -106,27 +142,17 @@ app.get("/best", function (req, res) {
   if (!since) return res.status(400).json({ error: "Invalid period. Use: week, month, year" });
 
   axios.get("https://hn.algolia.com/api/v1/search", {
-    params: { tags: "story", numericFilters: "points>50,created_at_i>" + since, hitsPerPage: 50 }
+    params: { tags: "front_page", numericFilters: "points>10,created_at_i>" + since, hitsPerPage: 50 }
   })
   .then(function (response) {
     var results = response.data.hits
       .filter(function (h) { return h.url && h.title; })
       .sort(function (a, b) { return (b.points || 0) - (a.points || 0); })
       .slice(0, 30)
-      .map(function (h) {
-        return {
-          _id:          h.objectID,
-          title:        h.title,
-          link:         h.url,
-          score:        h.points,
-          by:           h.author,
-          time:         h.created_at_i,
-          commentCount: h.num_comments,
-          hnId:         h.objectID,
-          ephemeral:    true
-        };
-      });
-    res.json(results);
+      .map(mapAlgoliaHit);
+
+    return persistAlgoliaResults(results)
+      .then(function (dbResults) { res.json(dbResults); });
   })
   .catch(function (err) {
     console.error("Best/Algolia error:", err.message);
@@ -150,20 +176,10 @@ app.get("/search", function (req, res) {
   .then(function (response) {
     var results = response.data.hits
       .filter(function (h) { return h.url && h.title; })
-      .map(function (h) {
-        return {
-          _id:          h.objectID,
-          title:        h.title,
-          link:         h.url,
-          score:        h.points,
-          by:           h.author,
-          time:         h.created_at_i,
-          commentCount: h.num_comments,
-          hnId:         h.objectID,
-          ephemeral:    true
-        };
-      });
-    res.json(results);
+      .map(mapAlgoliaHit);
+
+    return persistAlgoliaResults(results)
+      .then(function (dbResults) { res.json(dbResults); });
   })
   .catch(function (err) {
     console.error("Algolia search error:", err.message);

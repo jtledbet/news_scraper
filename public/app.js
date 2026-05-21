@@ -104,14 +104,17 @@ function renderArticle(article) {
     .attr("title", "Click to open article (right-click to toggle read)");
 
   // Star button
-  var $star = $("<span>")
-    .addClass("star-btn")
-    .toggleClass("favorited", isFav)
-    .attr("data-id", article._id)
-    .attr("title", "Star this article")
-    .attr("role", "button")
-    .attr("tabindex", "0")
-    .text(isFav ? "★" : "☆");
+  var $star = null;
+  if (!article.ephemeral) {
+    $star = $("<span>")
+      .addClass("star-btn")
+      .toggleClass("favorited", isFav)
+      .attr("data-id", article._id)
+      .attr("title", "Star this article")
+      .attr("role", "button")
+      .attr("tabindex", "0")
+      .text(isFav ? "★" : "☆");
+  }
 
   // Title (safe: .text() escapes)
   var $title = $("<span>").addClass("article-title").text(article.title);
@@ -148,7 +151,6 @@ function renderArticle(article) {
     $thelink.append(" ", $comments);
   }
 
-  // Note button — only for DB articles (not ephemeral Algolia results)
   if (!article.ephemeral) {
     var $noteBtn = $("<span>")
       .addClass("note-btn")
@@ -159,7 +161,7 @@ function renderArticle(article) {
       .text("📝");
     $p.append($star, " ", $title, " ", $meta, " ", $noteBtn, $("<br>"), $thelink);
   } else {
-    $p.append($star, " ", $title, " ", $meta, $("<br>"), $thelink);
+    $p.append($title, " ", $meta, $("<br>"), $thelink);
   }
 
   if (hideReadArticles && isRead) $p.hide();
